@@ -17,7 +17,7 @@ export class Board extends createjs.Container{
 
     addLine(height: number) {
         var l = new Line(height);
-        l.x = game.Game.blockSize * this.lines.length;
+        l.x = (game.Game.blockSize * 5)* this.lines.length;
 
         this.lines.push(l);
         this.addChild(l);
@@ -47,10 +47,10 @@ export class Line extends createjs.Container {
 
         this.blocks = [];
 
-        this.addBlocks(height);
+        this.changeBlocks(height);
     }
 
-    addBlocks(num: number, animate?: bool, onComplete?:Function) {
+    changeBlocks(amount: number, animate?: bool, onComplete?: Function) {
         var add = () => {
             this._size++;
             var b: Block = new Block();
@@ -60,38 +60,6 @@ export class Line extends createjs.Container {
             this.blocksUpdated();
         }
 
-        var cycleAdd = (times: number) => {
-            if (times < num) {
-                add();
-                createjs.Tween
-                    .get(this)
-                    .to({ y: (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize) }, 500, createjs.Ease.bounceOut)
-                    .call(cycleAdd, [times + 1]);
-            }
-            else {
-                if (onComplete) {
-                    onComplete();
-                }
-            }
-        }
-
-
-        if (!animate) {
-            for (var i = 0; i < num; i++) {
-                add();
-                this.y = (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize);
-            }
-        }
-        else {
-            cycleAdd(0);
-        }
-    }
-
-    removeBlocks(num: number, animate?: bool, onComplete?:Function) {
-        if (this._size == 0) {
-            throw "No blocks left.";
-        }
-
         var remove = () => {
             this._size--;
             var b: Block = this.blocks.pop();
@@ -99,13 +67,19 @@ export class Line extends createjs.Container {
             this.blocksUpdated();
         }
 
-        var cycleRemove = (times: number) => {
-            if (times < num) {
-                remove();
+        var cycle = (times: number) => {
+            if (times < Math.abs(amount)) {
+                if (amount > 0) {
+                    add();
+                }
+                else {
+                    remove();
+                }
+
                 createjs.Tween
                     .get(this)
                     .to({ y: (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize) }, 500, createjs.Ease.bounceOut)
-                    .call(cycleRemove, [times + 1]);
+                    .call(cycle, [times + 1]);
             }
             else {
                 if (onComplete) {
@@ -115,12 +89,19 @@ export class Line extends createjs.Container {
         }
 
         if (!animate) {
-            for (var i = 0; i < num; i++) {
-                remove();
+            for (var i = 0; i < Math.abs(amount); i++) {
+                if (amount > 0) {
+                    add();
+                }
+                else {
+                    remove();
+                }
+
+                this.y = (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize);
             }
         }
         else {
-            cycleRemove(0);
+            cycle(0);
         }
     }
 

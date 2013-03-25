@@ -21,12 +21,16 @@
     <Content Include="control.js">
       <DependentUpon>control.ts</DependentUpon>
     </Content>
-    <Content Include="default.htm" />
+    <Content Include="index.htm" />
     <TypeScriptCompile Include="board.ts" />
     <Content Include="graphics\ball.png" />
     <Content Include="graphics\ball.svg" />
     <Content Include="graphics\ball.svg.2013_03_24_12_05_50.0.svg" />
     <Content Include="graphics\block.svg" />
+    <TypeScriptCompile Include="stunts.ts" />
+    <Content Include="stunts.js">
+      <DependentUpon>stunts.ts</DependentUpon>
+    </Content>
     <Content Include="ts-definitions\DefinitelyTyped\easeljs\easeljs.d.ts" />
   </ItemGroup>
   <ItemGroup>

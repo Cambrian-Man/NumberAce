@@ -19,7 +19,7 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
         }
         Board.prototype.addLine = function (height) {
             var l = new Line(height);
-            l.x = game.Game.blockSize * this.lines.length;
+            l.x = (game.Game.blockSize * 5) * this.lines.length;
             this.lines.push(l);
             this.addChild(l);
         };
@@ -41,9 +41,9 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
             this.count.textAlign = "center";
             this.addChild(this.count);
             this.blocks = [];
-            this.addBlocks(height);
+            this.changeBlocks(height);
         }
-        Line.prototype.addBlocks = function (num, animate, onComplete) {
+        Line.prototype.changeBlocks = function (amount, animate, onComplete) {
             var _this = this;
             var add = function () {
                 _this._size++;
@@ -53,46 +53,22 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
                 _this.addChild(b);
                 _this.blocksUpdated();
             };
-            var cycleAdd = function (times) {
-                if(times < num) {
-                    add();
-                    createjs.Tween.get(_this).to({
-                        y: (game.Game.height - game.Game.blockSize) - (_this.size() * game.Game.blockSize)
-                    }, 500, createjs.Ease.bounceOut).call(cycleAdd, [
-                        times + 1
-                    ]);
-                } else {
-                    if(onComplete) {
-                        onComplete();
-                    }
-                }
-            };
-            if(!animate) {
-                for(var i = 0; i < num; i++) {
-                    add();
-                    this.y = (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize);
-                }
-            } else {
-                cycleAdd(0);
-            }
-        };
-        Line.prototype.removeBlocks = function (num, animate, onComplete) {
-            var _this = this;
-            if(this._size == 0) {
-                throw "No blocks left.";
-            }
             var remove = function () {
                 _this._size--;
                 var b = _this.blocks.pop();
                 _this.removeChild(b);
                 _this.blocksUpdated();
             };
-            var cycleRemove = function (times) {
-                if(times < num) {
-                    remove();
+            var cycle = function (times) {
+                if(times < Math.abs(amount)) {
+                    if(amount > 0) {
+                        add();
+                    } else {
+                        remove();
+                    }
                     createjs.Tween.get(_this).to({
                         y: (game.Game.height - game.Game.blockSize) - (_this.size() * game.Game.blockSize)
-                    }, 500, createjs.Ease.bounceOut).call(cycleRemove, [
+                    }, 500, createjs.Ease.bounceOut).call(cycle, [
                         times + 1
                     ]);
                 } else {
@@ -102,11 +78,16 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
                 }
             };
             if(!animate) {
-                for(var i = 0; i < num; i++) {
-                    remove();
+                for(var i = 0; i < Math.abs(amount); i++) {
+                    if(amount > 0) {
+                        add();
+                    } else {
+                        remove();
+                    }
+                    this.y = (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize);
                 }
             } else {
-                cycleRemove(0);
+                cycle(0);
             }
         };
         Line.prototype.blocksUpdated = function () {

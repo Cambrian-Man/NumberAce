@@ -29,6 +29,18 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
                 id: "block",
                 src: "./graphics/block.png"
             });
+            this.queue.loadFile({
+                id: "upArrow",
+                src: "./graphics/upArrow.png"
+            });
+            this.queue.loadFile({
+                id: "downArrow",
+                src: "./graphics/downArrow.png"
+            });
+            this.queue.loadFile({
+                id: "goButton",
+                src: "./graphics/goButton.png"
+            });
             this.queue.addEventListener("complete", function () {
                 _this.gameStart();
             });
@@ -82,13 +94,13 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             };
             if(this.player.mode == control.Player.subtractMode) {
                 if(line.size() > 0 || this.player.power == 0) {
-                    line.removeBlocks(this.player.power, true, function () {
+                    line.changeBlocks(-this.player.power, true, function () {
                         blocksCompleted();
                     });
                 }
             } else if(this.player.mode == control.Player.addMode) {
                 if(line.size() < 10 || this.player.power == 0) {
-                    line.addBlocks(this.player.power, true, function () {
+                    line.changeBlocks(this.player.power, true, function () {
                         blocksCompleted();
                     });
                 }

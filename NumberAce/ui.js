@@ -14,7 +14,7 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
                 _super.call(this);
             this.type = type;
             if(this.type == UI.tablet) {
-                this.createControls();
+                this.createControls(queue);
             }
             this.powerDisplay = new createjs.Text("", "32px Arial", "#000");
             this.powerDisplay.x = game.Game.width - 128;
@@ -23,22 +23,33 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
         UI.tablet = "tablet";
         UI.mobile = "mobile";
         UI.web = "web";
-        UI.prototype.createControls = function () {
-            var buttonSize = game.Game.blockSize * 1.5;
+        UI.prototype.createControls = function (queue) {
+            var buttonSize = game.Game.blockSize * 2;
             var g = new createjs.Graphics();
             g.beginStroke("#000");
             g.beginFill("rgba(255, 255, 255, 0.3)");
             g.rect(0, 0, buttonSize, buttonSize);
-            this.powerUpButton = new createjs.Shape(g);
-            this.powerUpButton.cache(0, 0, buttonSize, buttonSize);
+            var upArrow = queue.getResult("upArrow");
+            this.powerUpButton = new createjs.Bitmap(upArrow);
+            this.powerUpButton.alpha = 0.6;
+            this.powerUpButton.scaleX = buttonSize / upArrow.width;
+            this.powerUpButton.scaleY = buttonSize / upArrow.width;
             this.powerUpButton.x = game.Game.width - (buttonSize * 3);
             this.powerUpButton.y = buttonSize * 0.25;
             this.addChild(this.powerUpButton);
-            this.powerDownButton = new createjs.Shape(g);
+            var downArrow = queue.getResult("downArrow");
+            this.powerDownButton = new createjs.Bitmap(downArrow);
+            this.powerDownButton.alpha = 0.6;
+            this.powerDownButton.scaleX = buttonSize / downArrow.width;
+            this.powerDownButton.scaleY = buttonSize / downArrow.width;
             this.powerDownButton.x = game.Game.width - (buttonSize * 3);
             this.powerDownButton.y = buttonSize * 2 + (buttonSize * 0.25);
             this.addChild(this.powerDownButton);
-            this.activateButton = new createjs.Shape(g);
+            var goButton = queue.getResult("goButton");
+            this.activateButton = new createjs.Bitmap(goButton);
+            this.activateButton.alpha = 0.6;
+            this.activateButton.scaleX = buttonSize / goButton.width;
+            this.activateButton.scaleY = buttonSize / goButton.width;
             this.activateButton.x = game.Game.width - (buttonSize * 3);
             this.activateButton.y = buttonSize + (buttonSize * 0.25);
             this.addChild(this.activateButton);
