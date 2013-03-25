@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Web
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumberAce", "NumberAce\NumberAce.csproj", "{FAC5C98A-D0F3-44DB-8162-0354763FDACF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FAC5C98A-D0F3-44DB-8162-0354763FDACF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAC5C98A-D0F3-44DB-8162-0354763FDACF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAC5C98A-D0F3-44DB-8162-0354763FDACF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAC5C98A-D0F3-44DB-8162-0354763FDACF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
