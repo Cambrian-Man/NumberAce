@@ -1,4 +1,4 @@
-define(["require", "exports", "board", "control", "ui"], function(require, exports, __board__, __control__, __ui__) {
+define(["require", "exports", "board", "control", "ui", "stunts"], function(require, exports, __board__, __control__, __ui__, __stunts__) {
     /// <reference path="./ts-definitions/DefinitelyTyped/easeljs/easeljs.d.ts" />
     /// <reference path="./ts-definitions/DefinitelyTyped/preloadjs/preloadjs.d.ts" />
     /// <reference path="./ts-definitions/DefinitelyTyped/tweenjs/TweenJS.d.ts" />
@@ -12,7 +12,8 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
 
     var ui = __ui__;
 
-    
+    var stunts = __stunts__;
+
     var Game = (function () {
         function Game(canvas) {
             var _this = this;
@@ -29,6 +30,10 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             this.queue.loadFile({
                 id: "block",
                 src: "./graphics/block.png"
+            });
+            this.queue.loadFile({
+                id: "piston",
+                src: "./graphics/piston.png"
             });
             this.queue.loadFile({
                 id: "upArrow",
@@ -64,6 +69,7 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             this.background = new createjs.Shape(g);
             this.stage.addChild(this.background);
             this.board = new board.Board(this.queue);
+            stunts.Stunt.board = this.board;
             this.stage.addChild(this.board);
             Game.controls = new control.Controls(control.Controls.touch);
             this.player = new control.Player(this.queue);
@@ -85,44 +91,21 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             }
             this.player.ready = false;
             var line = this.board.getLine(this.player.column);
-            var blocksCompleted = function () {
-                if(line.size() == _this.board.getLine(_this.player.column + 1).size()) {
-                    _this.success();
-                } else {
-                    _this.failure();
-                }
-            };
-            if(this.player.mode == control.Player.subtractMode) {
-                if(line.size() > 0 || this.player.power == 0) {
-                    line.changeBlocks(-this.player.power, true, function () {
-                        blocksCompleted();
-                    });
-                }
-            } else if(this.player.mode == control.Player.addMode) {
-                if(line.size() < 10 || this.player.power == 0) {
-                    line.changeBlocks(this.player.power, true, function () {
-                        blocksCompleted();
-                    });
-                }
-            }
+            var nextLine = this.board.getLine(this.player.column + 1);
+            var stunt = new stunts.AddPlatform(line, nextLine, this.player, function () {
+                _this.success();
+            }, function () {
+                _this.failure();
+            });
+            stunt.go();
             this.player.power = 0;
         };
         Game.prototype.success = function () {
             this.player.height = this.board.getLine(this.player.column).size();
             this.player.column++;
-            this.animateProgress();
         };
         Game.prototype.failure = function () {
             this.player.ready = true;
-        };
-        Game.prototype.animateProgress = function () {
-            var _this = this;
-            var completed = function () {
-                _this.player.ready = true;
-            };
-            createjs.Tween.get(this.player).to({
-                progress: this.board.getLine(this.player.column).x
-            }, 500, createjs.Ease.sineInOut).call(completed);
         };
         Game.prototype.update = function () {
             if(this.player.progress > Game.width / 2) {
@@ -130,10 +113,8 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             } else {
                 this.cameraOffset = 0;
             }
-            if(!createjs.Tween.hasActiveTweens(this.player.ball)) {
-                this.player.ball.x = this.player.progress - this.cameraOffset;
-                this.player.ball.y = this.board.getLine(this.player.column).y;
-            }
+            this.player.ball.x = this.player.progress - this.cameraOffset;
+            this.player.ball.y = this.board.getLine(this.player.column).y;
             this.board.x = -this.cameraOffset;
             Game.ui.updatePower(this.player);
             this.stage.update();

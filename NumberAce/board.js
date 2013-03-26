@@ -11,6 +11,7 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
         function Board(queue) {
                 _super.call(this);
             Block.blockGraphic = queue.getResult("block");
+            Block.pistonGraphic = queue.getResult("piston");
             this.lines = [];
             for(var i = 0; i < 30; i++) {
                 var height = Math.floor((Math.random() * 10)) + 1;
@@ -43,12 +44,15 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
             this.blocks = [];
             this.changeBlocks(height);
         }
-        Line.prototype.changeBlocks = function (amount, animate, onComplete) {
+        Line.prototype.changeBlocks = function (amount, leavePosition) {
             var _this = this;
             var add = function () {
                 _this._size++;
                 var b = new Block();
                 b.y = _this.size() * game.Game.blockSize;
+                if(_this.size() > 1) {
+                    b.setImage(Block.pistonGraphic);
+                }
                 _this.blocks.push(b);
                 _this.addChild(b);
                 _this.blocksUpdated();
@@ -59,35 +63,15 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
                 _this.removeChild(b);
                 _this.blocksUpdated();
             };
-            var cycle = function (times) {
-                if(times < Math.abs(amount)) {
-                    if(amount > 0) {
-                        add();
-                    } else {
-                        remove();
-                    }
-                    createjs.Tween.get(_this).to({
-                        y: (game.Game.height - game.Game.blockSize) - (_this.size() * game.Game.blockSize)
-                    }, 500, createjs.Ease.bounceOut).call(cycle, [
-                        times + 1
-                    ]);
+            for(var i = 0; i < Math.abs(amount); i++) {
+                if(amount > 0) {
+                    add();
                 } else {
-                    if(onComplete) {
-                        onComplete();
-                    }
+                    remove();
                 }
-            };
-            if(!animate) {
-                for(var i = 0; i < Math.abs(amount); i++) {
-                    if(amount > 0) {
-                        add();
-                    } else {
-                        remove();
-                    }
+                if(!leavePosition) {
                     this.y = (game.Game.height - game.Game.blockSize) - (this.size() * game.Game.blockSize);
                 }
-            } else {
-                cycle(0);
             }
         };
         Line.prototype.blocksUpdated = function () {
@@ -109,6 +93,9 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
             this.scaleX = game.Game.blockSize / Block.blockGraphic.width;
             this.scaleY = game.Game.blockSize / Block.blockGraphic.height;
         }
+        Block.prototype.setImage = function (image) {
+            this.image = image;
+        };
         return Block;
     })(createjs.Bitmap);    
 })

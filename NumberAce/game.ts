@@ -37,6 +37,7 @@ export class Game {
         this.queue = new createjs.LoadQueue();
         this.queue.loadFile({ id: "ball", src: "./graphics/ball.png" });
         this.queue.loadFile({ id: "block", src: "./graphics/block.png" });
+        this.queue.loadFile({ id: "piston", src: "./graphics/piston.png" });
         this.queue.loadFile({ id: "upArrow", src: "./graphics/upArrow.png" });
         this.queue.loadFile({ id: "downArrow", src: "./graphics/downArrow.png" });
         this.queue.loadFile({ id: "goButton", src: "./graphics/goButton.png" });
@@ -55,6 +56,7 @@ export class Game {
         this.stage.addChild(this.background);
 
         this.board = new board.Board(this.queue);
+        stunts.Stunt.board = this.board;
         this.stage.addChild(this.board);
 
         Game.controls = new control.Controls(control.Controls.touch);
@@ -81,53 +83,27 @@ export class Game {
         this.player.ready = false;
 
         var line = this.board.getLine(this.player.column);
+        var nextLine = this.board.getLine(this.player.column + 1);
 
-        var blocksCompleted = () => {
-            if (line.size() == this.board.getLine(this.player.column + 1).size()) {
-                this.success();
-            }
-            else {
+        var stunt: stunts.Stunt = new stunts.AddPlatform(line, nextLine, this.player,
+            () => {
+                 this.success();
+             },
+            () => {
                 this.failure();
-            }
-        }
+            });
 
-        if (this.player.mode == control.Player.subtractMode) {
-            if (line.size() > 0 || this.player.power == 0) {
-                line.changeBlocks(-this.player.power, true, () => {
-                    blocksCompleted();
-                });
-            }
-        }
-        else if (this.player.mode == control.Player.addMode) {
-            if (line.size() < 10 || this.player.power == 0) {
-                line.changeBlocks(this.player.power, true, () => {
-                    blocksCompleted();
-                });
-            }
-        }
-
+        stunt.go();
         this.player.power = 0;
     }
 
     private success() {
         this.player.height = this.board.getLine(this.player.column).size();
         this.player.column++;
-        this.animateProgress();
     }
 
     private failure() {
         this.player.ready = true;
-    }
-
-    private animateProgress() {
-        var completed: Function = () => {
-            this.player.ready = true;
-        }
- 
-        createjs.Tween
-            .get(this.player)
-            .to({ progress: this.board.getLine(this.player.column).x }, 500, createjs.Ease.sineInOut)
-            .call(<any> completed);
     }
 
     update() {
@@ -137,11 +113,9 @@ export class Game {
         else {
             this.cameraOffset = 0;
         }
-        
-        if (!createjs.Tween.hasActiveTweens(this.player.ball)) {
-            this.player.ball.x = this.player.progress - this.cameraOffset;
-            this.player.ball.y = this.board.getLine(this.player.column).y;
-        }
+
+        this.player.ball.x = this.player.progress - this.cameraOffset;
+        this.player.ball.y = this.board.getLine(this.player.column).y;
 
         this.board.x = -this.cameraOffset;
 
