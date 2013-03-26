@@ -12,6 +12,7 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
 
     var ui = __ui__;
 
+    
     var Game = (function () {
         function Game(canvas) {
             var _this = this;
@@ -69,7 +70,6 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             this.player.column = 0;
             this.player.power = 0;
             this.player.height = this.board.getLine(0).size();
-            this.setPlayerPosition();
             this.player.onActivate = function () {
                 if(_this.player.ready) {
                     _this.activate();
@@ -109,7 +109,6 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
         };
         Game.prototype.success = function () {
             this.player.height = this.board.getLine(this.player.column).size();
-            this.setPlayerPosition();
             this.player.column++;
             this.animateProgress();
         };
@@ -121,32 +120,21 @@ define(["require", "exports", "board", "control", "ui"], function(require, expor
             var completed = function () {
                 _this.player.ready = true;
             };
-            var minOffsetColumn = Math.floor(Game.width / Game.blockSize) / 2;
-            if(this.player.column > minOffsetColumn) {
-                this.cameraOffset = (this.player.column - minOffsetColumn) * Game.blockSize;
+            createjs.Tween.get(this.player).to({
+                progress: this.board.getLine(this.player.column).x
+            }, 500, createjs.Ease.sineInOut).call(completed);
+        };
+        Game.prototype.update = function () {
+            if(this.player.progress > Game.width / 2) {
+                this.cameraOffset = this.player.progress - (Game.width / 2);
             } else {
                 this.cameraOffset = 0;
             }
-            if(this.cameraOffset == 0) {
-                // If we don't need to animate the camera, just move the player.
-                createjs.Tween.get(this.player.ball).to({
-                    x: this.board.getLine(this.player.column).x
-                }, 500, createjs.Ease.sineInOut).call(completed);
-            } else {
-                // Otherwise, we tween the board.
-                createjs.Tween.get(this.board).to({
-                    x: -this.cameraOffset
-                }, 500, createjs.Ease.sineInOut).call(completed);
-            }
-        };
-        Game.prototype.setPlayerPosition = function () {
-            this.player.ball.x = this.board.getLine(this.player.column).x - this.cameraOffset;
-            this.player.ball.y = this.board.getLine(this.player.column).y;
-        };
-        Game.prototype.update = function () {
             if(!createjs.Tween.hasActiveTweens(this.player.ball)) {
-                this.setPlayerPosition();
+                this.player.ball.x = this.player.progress - this.cameraOffset;
+                this.player.ball.y = this.board.getLine(this.player.column).y;
             }
+            this.board.x = -this.cameraOffset;
             Game.ui.updatePower(this.player);
             this.stage.update();
         };

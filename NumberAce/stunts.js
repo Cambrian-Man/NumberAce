@@ -1,23 +1,37 @@
-// Module
-var Shapes;
-(function (Shapes) {
-    // Class
-    var Point = (function () {
-        // Constructor
-        function Point(x, y) {
-            this.x = x;
-            this.y = y;
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+define(["require", "exports"], function(require, exports) {
+    
+    
+    var Stunt = (function () {
+        function Stunt(from, to, callback) {
+            this.from = from;
+            this.to = to;
+            this.callback = callback;
         }
-        Point.prototype.getDist = // Instance member
-        function () {
-            return Math.sqrt(this.x * this.x + this.y * this.y);
+        Stunt.prototype.go = function () {
+            if(this.callback) {
+                this.callback();
+            }
         };
-        Point.origin = new Point(0, 0);
-        return Point;
+        Stunt.register = function register(stunt) {
+        };
+        return Stunt;
     })();
-    Shapes.Point = Point;    
-})(Shapes || (Shapes = {}));
-// Local variables
-var p = new Shapes.Point(3, 4);
-var dist = p.getDist();
+    exports.Stunt = Stunt;    
+    var MovePlatform = (function (_super) {
+        __extends(MovePlatform, _super);
+        function MovePlatform() {
+            _super.apply(this, arguments);
+
+        }
+        MovePlatform.prototype.go = function () {
+        };
+        return MovePlatform;
+    })(Stunt);
+    exports.MovePlatform = MovePlatform;    
+})
 //@ sourceMappingURL=stunts.js.map

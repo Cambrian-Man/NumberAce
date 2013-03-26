@@ -12,8 +12,9 @@ export class Player {
     public ready: bool;
 
     public ball: createjs.DisplayObject;
-    public machine: createjs.Shape;
     
+    public progress: number;
+
     public onActivate: Function;
 
     constructor(queue: createjs.LoadQueue) {
@@ -58,6 +59,7 @@ export class Player {
         });
 
         this.mode = Player.subtractMode;
+        this.progress = 0;
         this.ready = true;
     }
 }

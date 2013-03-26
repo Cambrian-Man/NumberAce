@@ -36,6 +36,7 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
                 }
             });
             this.mode = Player.subtractMode;
+            this.progress = 0;
             this.ready = true;
         }
         Player.subtractMode = "subtract";

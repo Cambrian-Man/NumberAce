@@ -9,6 +9,7 @@
 import board = module("board");
 import control = module("control");
 import ui = module("ui");
+import stunts = module("stunts");
 
 export class Game {
     public stage: createjs.Stage;
@@ -62,7 +63,6 @@ export class Game {
         this.player.column = 0;
         this.player.power = 0;
         this.player.height = this.board.getLine(0).size();
-        this.setPlayerPosition();
 
         this.player.onActivate = () => {
             if (this.player.ready) {
@@ -111,7 +111,6 @@ export class Game {
 
     private success() {
         this.player.height = this.board.getLine(this.player.column).size();
-        this.setPlayerPosition();
         this.player.column++;
         this.animateProgress();
     }
@@ -124,41 +123,27 @@ export class Game {
         var completed: Function = () => {
             this.player.ready = true;
         }
-        
-        var minOffsetColumn = Math.floor(Game.width / Game.blockSize) / 2;
+ 
+        createjs.Tween
+            .get(this.player)
+            .to({ progress: this.board.getLine(this.player.column).x }, 500, createjs.Ease.sineInOut)
+            .call(<any> completed);
+    }
 
-        if (this.player.column > minOffsetColumn) {
-            this.cameraOffset = (this.player.column - minOffsetColumn) * Game.blockSize;
+    update() {
+        if (this.player.progress > Game.width / 2) {
+            this.cameraOffset = this.player.progress - (Game.width / 2);
         }
         else {
             this.cameraOffset = 0;
         }
-
-        if (this.cameraOffset == 0) {
-            // If we don't need to animate the camera, just move the player.
-            createjs.Tween
-                .get(this.player.ball)
-                .to({ x: this.board.getLine(this.player.column).x }, 500, createjs.Ease.sineInOut)
-                .call(<any> completed);
-        }
-        else {
-            // Otherwise, we tween the board.
-            createjs.Tween
-                .get(this.board)
-                .to({ x: -this.cameraOffset }, 500, createjs.Ease.sineInOut)
-                .call(<any> completed);
-        }
-    }
-
-    setPlayerPosition() {
-        this.player.ball.x = this.board.getLine(this.player.column).x - this.cameraOffset;
-        this.player.ball.y = this.board.getLine(this.player.column).y;
-    }
-
-    update() {
+        
         if (!createjs.Tween.hasActiveTweens(this.player.ball)) {
-            this.setPlayerPosition();
+            this.player.ball.x = this.player.progress - this.cameraOffset;
+            this.player.ball.y = this.board.getLine(this.player.column).y;
         }
+
+        this.board.x = -this.cameraOffset;
 
         Game.ui.updatePower(this.player);
 
