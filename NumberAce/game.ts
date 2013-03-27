@@ -100,10 +100,12 @@ export class Game {
     private success() {
         this.player.height = this.board.getLine(this.player.column).size();
         this.player.column++;
+        this.player.combo += 10;
     }
 
     private failure() {
         this.player.ready = true;
+        this.player.combo = 0;
     }
 
     update() {
@@ -119,7 +121,7 @@ export class Game {
 
         this.board.x = -this.cameraOffset;
 
-        Game.ui.updatePower(this.player);
+        Game.ui.update(this.player);
 
         this.stage.update();
     }

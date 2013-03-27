@@ -14,10 +14,12 @@ export class Player {
     public ball: createjs.DisplayObject;
     
     public progress: number;
+    public combo: number;
 
     public onActivate: Function;
 
     constructor(queue: createjs.LoadQueue) {
+        this.combo = 0;
         var ballImage = <HTMLImageElement> queue.getResult("ball");
         
         this.ball = new createjs.Bitmap(ballImage);

@@ -7,6 +7,8 @@ export class UI extends createjs.Container{
     public static web = "web";
 
     private powerDisplay: createjs.Text;
+    private comboMeter: createjs.DisplayObject;
+    private comboMask: createjs.Shape;
 
     public powerUpButton: createjs.Bitmap;
     public powerDownButton: createjs.Bitmap;
@@ -24,6 +26,17 @@ export class UI extends createjs.Container{
         this.powerDisplay = new createjs.Text("", "32px Arial", "#000");
         this.powerDisplay.x = game.Game.width - 128;
         this.addChild(this.powerDisplay);
+
+        var g: createjs.Graphics = new createjs.Graphics();
+        g.beginLinearGradientFill(["#F00", "#0F0"], [0, 1], 0, 0, 200, 0);
+        g.rect(0, 0, 200, 50);
+        this.comboMeter = new createjs.Shape(g);
+
+        this.comboMask = new createjs.Shape();
+        this.comboMask.graphics.rect(0, 0, 200, 50);
+        this.comboMeter.mask = this.comboMask;
+
+        this.addChild(this.comboMeter);
     }
 
     private createControls(queue : createjs.LoadQueue) {
@@ -70,6 +83,15 @@ export class UI extends createjs.Container{
         this.switchBackwardButton.x = game.Game.width - (buttonSize * 4);
         this.switchBackwardButton.y = game.Game.height - ((buttonSize * 2) + (buttonSize * 0.25));
         this.addChild(this.switchBackwardButton);
+    }
+
+    update(player: control.Player) {
+        this.updatePower(player);
+        this.updateCombo(player);
+    }
+
+    updateCombo(player: control.Player) {
+        this.comboMask.scaleX = (player.combo / 100);
     }
 
     updatePower(player: control.Player) {

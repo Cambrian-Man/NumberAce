@@ -19,6 +19,20 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
             this.powerDisplay = new createjs.Text("", "32px Arial", "#000");
             this.powerDisplay.x = game.Game.width - 128;
             this.addChild(this.powerDisplay);
+            var g = new createjs.Graphics();
+            g.beginLinearGradientFill([
+                "#F00", 
+                "#0F0"
+            ], [
+                0, 
+                1
+            ], 0, 0, 200, 0);
+            g.rect(0, 0, 200, 50);
+            this.comboMeter = new createjs.Shape(g);
+            this.comboMask = new createjs.Shape();
+            this.comboMask.graphics.rect(0, 0, 200, 50);
+            this.comboMeter.mask = this.comboMask;
+            this.addChild(this.comboMeter);
         }
         UI.tablet = "tablet";
         UI.mobile = "mobile";
@@ -61,6 +75,13 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
             this.switchBackwardButton.x = game.Game.width - (buttonSize * 4);
             this.switchBackwardButton.y = game.Game.height - ((buttonSize * 2) + (buttonSize * 0.25));
             this.addChild(this.switchBackwardButton);
+        };
+        UI.prototype.update = function (player) {
+            this.updatePower(player);
+            this.updateCombo(player);
+        };
+        UI.prototype.updateCombo = function (player) {
+            this.comboMask.scaleX = (player.combo / 100);
         };
         UI.prototype.updatePower = function (player) {
             var text;

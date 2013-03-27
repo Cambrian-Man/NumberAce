@@ -5,6 +5,10 @@ import control = module("control");
 export class Stunt {
     public static board: board.Board;
 
+    public static add: string = "add";
+    public static subtract: string = "subtract";
+    public static both: string = "both";
+
     constructor(public from: board.Line, public to: board.Line, public player:control.Player, public success: Function, public failure:Function) {
         
     }
@@ -16,6 +20,7 @@ export class Stunt {
 
 export class AddPlatform extends Stunt {
     private platform: createjs.DisplayObject;
+    public type = Stunt.both;
 
     go() {
         var g: createjs.Graphics = new createjs.Graphics();
@@ -35,7 +40,11 @@ export class AddPlatform extends Stunt {
             }
             else {
                 this.failure();
-                Stunt.board.addChild(this.platform);
+                createjs.Tween.get(this.platform)
+                    .to({ y: game.Game.height + (game.Game.blockSize * 4) }, 1000, createjs.Ease.getPowIn(2.5))
+                    .call(() => {
+                        Stunt.board.removeChild(this.platform);
+                    });
             }
             
         });

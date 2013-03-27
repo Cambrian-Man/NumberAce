@@ -17,6 +17,9 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
             this.success = success;
             this.failure = failure;
         }
+        Stunt.add = "add";
+        Stunt.subtract = "subtract";
+        Stunt.both = "both";
         Stunt.prototype.go = function () {
             throw "Need to override this";
         };
@@ -28,6 +31,7 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
         function AddPlatform() {
             _super.apply(this, arguments);
 
+            this.type = Stunt.both;
         }
         AddPlatform.prototype.go = function () {
             var _this = this;
@@ -47,7 +51,11 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
                     _this.animateProgress();
                 } else {
                     _this.failure();
-                    Stunt.board.addChild(_this.platform);
+                    createjs.Tween.get(_this.platform).to({
+                        y: game.Game.height + (game.Game.blockSize * 4)
+                    }, 1000, createjs.Ease.getPowIn(2.5)).call(function () {
+                        Stunt.board.removeChild(_this.platform);
+                    });
                 }
             });
         };

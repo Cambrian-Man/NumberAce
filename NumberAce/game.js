@@ -103,9 +103,11 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
         Game.prototype.success = function () {
             this.player.height = this.board.getLine(this.player.column).size();
             this.player.column++;
+            this.player.combo += 10;
         };
         Game.prototype.failure = function () {
             this.player.ready = true;
+            this.player.combo = 0;
         };
         Game.prototype.update = function () {
             if(this.player.progress > Game.width / 2) {
@@ -116,7 +118,7 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
             this.player.ball.x = this.player.progress - this.cameraOffset;
             this.player.ball.y = this.board.getLine(this.player.column).y;
             this.board.x = -this.cameraOffset;
-            Game.ui.updatePower(this.player);
+            Game.ui.update(this.player);
             this.stage.update();
         };
         return Game;

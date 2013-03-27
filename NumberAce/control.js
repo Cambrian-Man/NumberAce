@@ -4,6 +4,7 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
     var Player = (function () {
         function Player(queue) {
             var _this = this;
+            this.combo = 0;
             var ballImage = queue.getResult("ball");
             this.ball = new createjs.Bitmap(ballImage);
             this.ball.scaleX = game.Game.blockSize / ballImage.width;
