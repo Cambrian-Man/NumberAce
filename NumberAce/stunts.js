@@ -35,9 +35,10 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
         }
         AddPlatform.prototype.go = function () {
             var _this = this;
-            var g = new createjs.Graphics();
-            g.beginFill("#000").rect(0, 0, this.to.x - (this.from.x + game.Game.blockSize), game.Game.blockSize);
-            this.platform = new createjs.Shape(g);
+            var platformImage = Stunt.queue.getResult("platform");
+            this.platform = new createjs.Bitmap(platformImage);
+            this.platform.scaleY = game.Game.blockSize / platformImage.height;
+            this.platform.scaleX = game.Game.blockSize / platformImage.height;
             Stunt.board.addChild(this.platform);
             this.platform.x = this.from.x + game.Game.blockSize;
             this.platform.y = game.Game.height;

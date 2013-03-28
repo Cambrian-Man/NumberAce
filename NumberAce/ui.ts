@@ -27,13 +27,15 @@ export class UI extends createjs.Container{
         this.powerDisplay.x = game.Game.width - 128;
         this.addChild(this.powerDisplay);
 
+        var meterWidth = Math.floor(game.Game.width / 4);
+
         var g: createjs.Graphics = new createjs.Graphics();
-        g.beginLinearGradientFill(["#F00", "#0F0"], [0, 1], 0, 0, 200, 0);
-        g.rect(0, 0, 200, 50);
+        g.beginLinearGradientFill(["#F00", "#0F0"], [0, 1], 0, 0, meterWidth, 0);
+        g.rect(meterWidth / 6, meterWidth / 6, meterWidth, meterWidth / 5);
         this.comboMeter = new createjs.Shape(g);
 
         this.comboMask = new createjs.Shape();
-        this.comboMask.graphics.rect(0, 0, 200, 50);
+        this.comboMask.graphics.rect(meterWidth / 6, meterWidth / 6, meterWidth, meterWidth / 5);
         this.comboMeter.mask = this.comboMask;
 
         this.addChild(this.comboMeter);
@@ -91,7 +93,7 @@ export class UI extends createjs.Container{
     }
 
     updateCombo(player: control.Player) {
-        this.comboMask.scaleX = (player.combo / 100);
+        (player.combo / 100) < 1 ? this.comboMask.scaleX = (player.combo / 100) : this.scaleX = 1;
     }
 
     updatePower(player: control.Player) {

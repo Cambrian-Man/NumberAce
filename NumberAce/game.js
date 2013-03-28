@@ -36,6 +36,10 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
                 src: "./graphics/piston.png"
             });
             this.queue.loadFile({
+                id: "platform",
+                src: "./graphics/platform.png"
+            });
+            this.queue.loadFile({
                 id: "upArrow",
                 src: "./graphics/upArrow.png"
             });
@@ -50,6 +54,7 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
             this.queue.addEventListener("complete", function () {
                 _this.gameStart();
             });
+            stunts.Stunt.queue = this.queue;
         }
         Game.prototype.gameStart = function () {
             var _this = this;
@@ -104,6 +109,7 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
             this.player.height = this.board.getLine(this.player.column).size();
             this.player.column++;
             this.player.combo += 10;
+            console.log(this.player.combo);
         };
         Game.prototype.failure = function () {
             this.player.ready = true;

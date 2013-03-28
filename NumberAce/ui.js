@@ -19,6 +19,7 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
             this.powerDisplay = new createjs.Text("", "32px Arial", "#000");
             this.powerDisplay.x = game.Game.width - 128;
             this.addChild(this.powerDisplay);
+            var meterWidth = Math.floor(game.Game.width / 4);
             var g = new createjs.Graphics();
             g.beginLinearGradientFill([
                 "#F00", 
@@ -26,11 +27,11 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
             ], [
                 0, 
                 1
-            ], 0, 0, 200, 0);
-            g.rect(0, 0, 200, 50);
+            ], 0, 0, meterWidth, 0);
+            g.rect(meterWidth / 6, meterWidth / 6, meterWidth, meterWidth / 5);
             this.comboMeter = new createjs.Shape(g);
             this.comboMask = new createjs.Shape();
-            this.comboMask.graphics.rect(0, 0, 200, 50);
+            this.comboMask.graphics.rect(meterWidth / 6, meterWidth / 6, meterWidth, meterWidth / 5);
             this.comboMeter.mask = this.comboMask;
             this.addChild(this.comboMeter);
         }
@@ -81,7 +82,7 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
             this.updateCombo(player);
         };
         UI.prototype.updateCombo = function (player) {
-            this.comboMask.scaleX = (player.combo / 100);
+            (player.combo / 100) < 1 ? this.comboMask.scaleX = (player.combo / 100) : this.scaleX = 1;
         };
         UI.prototype.updatePower = function (player) {
             var text;

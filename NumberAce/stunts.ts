@@ -4,6 +4,7 @@ import control = module("control");
 
 export class Stunt {
     public static board: board.Board;
+    public static queue: createjs.LoadQueue;
 
     public static add: string = "add";
     public static subtract: string = "subtract";
@@ -23,9 +24,10 @@ export class AddPlatform extends Stunt {
     public type = Stunt.both;
 
     go() {
-        var g: createjs.Graphics = new createjs.Graphics();
-        g.beginFill("#000").rect(0, 0, this.to.x - (this.from.x + game.Game.blockSize), game.Game.blockSize);
-        this.platform = new createjs.Shape(g);
+        var platformImage = <HTMLImageElement> Stunt.queue.getResult("platform");
+        this.platform = new createjs.Bitmap(platformImage);
+        this.platform.scaleY = game.Game.blockSize / platformImage.height;
+        this.platform.scaleX = game.Game.blockSize / platformImage.height;
         Stunt.board.addChild(this.platform);
         this.platform.x = this.from.x + game.Game.blockSize;
         this.platform.y = game.Game.height;

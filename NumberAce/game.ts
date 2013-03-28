@@ -38,10 +38,13 @@ export class Game {
         this.queue.loadFile({ id: "ball", src: "./graphics/ball.png" });
         this.queue.loadFile({ id: "block", src: "./graphics/block.png" });
         this.queue.loadFile({ id: "piston", src: "./graphics/piston.png" });
+        this.queue.loadFile({ id: "platform", src: "./graphics/platform.png" });
         this.queue.loadFile({ id: "upArrow", src: "./graphics/upArrow.png" });
         this.queue.loadFile({ id: "downArrow", src: "./graphics/downArrow.png" });
         this.queue.loadFile({ id: "goButton", src: "./graphics/goButton.png" });
         this.queue.addEventListener("complete", () => { this.gameStart() });
+
+        stunts.Stunt.queue = this.queue;
     }
 
     gameStart() {
@@ -101,6 +104,7 @@ export class Game {
         this.player.height = this.board.getLine(this.player.column).size();
         this.player.column++;
         this.player.combo += 10;
+        console.log(this.player.combo);
     }
 
     private failure() {
