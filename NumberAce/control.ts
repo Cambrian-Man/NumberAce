@@ -1,4 +1,5 @@
 import game = module("game");
+import stunts = module("stunts");
 
 export class Player {
     public static subtractMode = "subtract";
@@ -15,11 +16,16 @@ export class Player {
     
     public progress: number;
     public combo: number;
+    public score: number;
+
+    public stunts: any[];
+    public currentStunt: number;
 
     public onActivate: Function;
 
     constructor(queue: createjs.LoadQueue) {
         this.combo = 0;
+        this.score = 0;
         var ballImage = <HTMLImageElement> queue.getResult("ball");
         
         this.ball = new createjs.Bitmap(ballImage);
@@ -43,24 +49,39 @@ export class Player {
         });
 
         game.Game.controls.on(ControlEvent.switchForward, () => {
-            if (this.mode == Player.subtractMode) {
+            this.currentStunt++;
+            this.currentStunt %= this.stunts.length;
+            
+
+            if (this.stunts[this.currentStunt].type == stunts.Stunt.add) {
                 this.mode = Player.addMode;
             }
-            else if (this.mode == Player.addMode) {
+            else {
                 this.mode = Player.subtractMode;
             }
+
+            game.Game.ui.carousel.forward();
         });
 
         game.Game.controls.on(ControlEvent.switchBack, () => {
-            if (this.mode == Player.subtractMode) {
+            this.currentStunt--;
+            this.currentStunt %= this.stunts.length;
+            if (this.currentStunt < 0) { this.currentStunt = this.stunts.length + this.currentStunt; }
+
+            if (this.stunts[this.currentStunt].type == stunts.Stunt.add) {
                 this.mode = Player.addMode;
             }
-            else if (this.mode == Player.addMode) {
+            else {
                 this.mode = Player.subtractMode;
             }
+
+            game.Game.ui.carousel.back();
         });
 
-        this.mode = Player.subtractMode;
+        this.stunts = [stunts.RaisePlatform, stunts.LowerPlatform];
+        this.currentStunt = 0;
+        this.mode = Player.addMode;
+
         this.progress = 0;
         this.ready = true;
     }

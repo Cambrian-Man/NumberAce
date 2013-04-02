@@ -20,6 +20,8 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
         Stunt.add = "add";
         Stunt.subtract = "subtract";
         Stunt.both = "both";
+        Stunt.icons = {
+        };
         Stunt.prototype.go = function () {
             throw "Need to override this";
         };
@@ -31,8 +33,8 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
         function AddPlatform() {
             _super.apply(this, arguments);
 
-            this.type = Stunt.both;
         }
+        AddPlatform.type = Stunt.both;
         AddPlatform.prototype.go = function () {
             var _this = this;
             var platformImage = Stunt.queue.getResult("platform");
@@ -103,6 +105,26 @@ define(["require", "exports", "game", "control"], function(require, exports, __g
         return AddPlatform;
     })(Stunt);
     exports.AddPlatform = AddPlatform;    
+    var RaisePlatform = (function (_super) {
+        __extends(RaisePlatform, _super);
+        function RaisePlatform() {
+            _super.apply(this, arguments);
+
+        }
+        RaisePlatform.type = Stunt.add;
+        return RaisePlatform;
+    })(AddPlatform);
+    exports.RaisePlatform = RaisePlatform;    
+    var LowerPlatform = (function (_super) {
+        __extends(LowerPlatform, _super);
+        function LowerPlatform() {
+            _super.apply(this, arguments);
+
+        }
+        LowerPlatform.type = Stunt.subtract;
+        return LowerPlatform;
+    })(AddPlatform);
+    exports.LowerPlatform = LowerPlatform;    
     var Pinball = (function (_super) {
         __extends(Pinball, _super);
         function Pinball() {

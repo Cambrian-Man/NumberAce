@@ -27,6 +27,10 @@ export class Board extends createjs.Container{
     getLine(column: number) {
         return this.lines[column];
     }
+
+    size(): number {
+        return this.lines.length - 1;
+    }
 }
 
 export class Line extends createjs.Container {

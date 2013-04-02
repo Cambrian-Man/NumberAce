@@ -17,7 +17,7 @@ export class Game {
 
     public player: control.Player;
     public board: board.Board;
-    private background: createjs.Shape;
+    private background: createjs.DisplayObject;
 
     public static controls: control.Controls;
     public static ui: ui.UI;
@@ -27,6 +27,8 @@ export class Game {
     public static width;
 
     private cameraOffset = 0;
+
+    private drainTimer: number;
 
     constructor(canvas: HTMLCanvasElement) {
         this.stage = new createjs.Stage(canvas);
@@ -38,45 +40,62 @@ export class Game {
         this.queue.loadFile({ id: "ball", src: "./graphics/ball.png" });
         this.queue.loadFile({ id: "block", src: "./graphics/block.png" });
         this.queue.loadFile({ id: "piston", src: "./graphics/piston.png" });
+        this.queue.loadFile({ id: "background", src: "./graphics/background.png" });
         this.queue.loadFile({ id: "platform", src: "./graphics/platform.png" });
         this.queue.loadFile({ id: "upArrow", src: "./graphics/upArrow.png" });
         this.queue.loadFile({ id: "downArrow", src: "./graphics/downArrow.png" });
+        this.queue.loadFile({ id: "raisePlatform", src: "./graphics/raisePlatform.png" });
+        this.queue.loadFile({ id: "lowerPlatform", src: "./graphics/lowerPlatform.png" });
         this.queue.loadFile({ id: "goButton", src: "./graphics/goButton.png" });
-        this.queue.addEventListener("complete", () => { this.gameStart() });
+        this.queue.loadFile({ id: "comboMeter", src: "./graphics/comboMeter.png" });
+        this.queue.addEventListener("complete", () => { this.gameSetup() });
 
         stunts.Stunt.queue = this.queue;
     }
 
-    gameStart() {
+    gameSetup() {
+        this.stage.removeAllChildren();
+
         createjs.Ticker.addEventListener("tick", () => { this.update(); });
 
         Game.ui = new ui.UI(ui.UI.tablet, this.queue);
+        ui.StuntCarousel.loadIcons(this.queue);
 
-        var g = new createjs.Graphics();
-        g.beginLinearGradientFill(["#115ca4", "#5ecaed"], [0, 1], 0, 0, 0, Game.height);
-        g.drawRect(0, 0, Game.width, Game.height);
-        this.background = new createjs.Shape(g);
+        Game.controls = new control.Controls(control.Controls.touch);
+
+        // Build the background.
+        var backBitmap = <HTMLImageElement> this.queue.getResult("background");
+        this.background = new createjs.Container();
+        var compWidth = (Game.height / backBitmap.height) * backBitmap.width;
+        for (var i = 0; i < Game.width / compWidth); i++) {
+            var backComponent = new createjs.Bitmap(backBitmap);
+            backComponent.scaleY = Game.height / backBitmap.height;
+            backComponent.scaleX = Game.height / backBitmap.height;
+            backComponent.x = compWidth * i;
+            (<createjs.Container> this.background).addChild(backComponent);
+        }
         this.stage.addChild(this.background);
 
+        this.gameStart();
+    }
+
+    gameStart() {
         this.board = new board.Board(this.queue);
         stunts.Stunt.board = this.board;
         this.stage.addChild(this.board);
-
-        Game.controls = new control.Controls(control.Controls.touch);
 
         this.player = new control.Player(this.queue);
         this.player.column = 0;
         this.player.power = 0;
         this.player.height = this.board.getLine(0).size();
+        Game.ui.carousel.buildIcons(this.player);
 
         this.player.onActivate = () => {
             if (this.player.ready) {
                 this.activate();
             }
         }
-        this.stage.addChild(this.player.ball);
-
-        
+        this.stage.addChild(this.player.ball);        
         this.stage.addChild(Game.ui);
     }
 
@@ -84,11 +103,13 @@ export class Game {
         if (!this.player.ready) { return; }
 
         this.player.ready = false;
+        clearInterval(this.drainTimer);
+        this.drainTimer = null;
 
         var line = this.board.getLine(this.player.column);
         var nextLine = this.board.getLine(this.player.column + 1);
 
-        var stunt: stunts.Stunt = new stunts.AddPlatform(line, nextLine, this.player,
+        var stunt: stunts.Stunt = new this.player.stunts[this.player.currentStunt](line, nextLine, this.player,
             () => {
                  this.success();
              },
@@ -96,15 +117,37 @@ export class Game {
                 this.failure();
             });
 
-        stunt.go();
+        if (this.player.mode == control.Player.subtractMode && line.size() - this.player.power <= 0) {
+            this.failure();
+        }
+        else {
+            stunt.go();
+        }
         this.player.power = 0;
+    }
+
+    private drainCombo() {
+        if (this.player.combo > 0) {
+            this.player.combo -= 1;
+        }
     }
 
     private success() {
         this.player.height = this.board.getLine(this.player.column).size();
         this.player.column++;
-        this.player.combo += 10;
-        console.log(this.player.combo);
+
+        if (this.player.column == this.board.size()) {
+            this.showEnding();
+            return;
+        }
+
+        if (this.player.combo < 100) {
+            this.player.combo += 10;
+        }
+        else {
+            this.player.combo = 100;
+        }
+        this.player.score += (10 + this.player.combo);
     }
 
     private failure() {
@@ -127,7 +170,33 @@ export class Game {
 
         Game.ui.update(this.player);
 
+        if (this.player.ready && !this.drainTimer) {
+            this.drainTimer = setInterval(() => {
+                this.drainCombo();
+            }, 1000);
+        }
+
         this.stage.update();
+    }
+
+    showEnding() {
+        var endText: createjs.Text = new createjs.Text("Your Score is " + this.player.score, Game.width / 30 + "px Fredoka One", "#FFF");
+        endText.x = Game.width / 2;
+        endText.y = Game.height / 2;
+        endText.textAlign = "center";
+        this.stage.addChild(endText);
+
+        this.player.ready = false;
+        this.stage.update();
+
+        var goOn = () => {
+            this.gameSetup();
+            window.removeEventListener("click", goOn);
+        }
+
+        window.addEventListener("click", goOn);
+
+        createjs.Ticker.removeAllListeners();
     }
 }
 

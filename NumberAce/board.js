@@ -27,6 +27,9 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
         Board.prototype.getLine = function (column) {
             return this.lines[column];
         };
+        Board.prototype.size = function () {
+            return this.lines.length - 1;
+        };
         return Board;
     })(createjs.Container);
     exports.Board = Board;    

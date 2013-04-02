@@ -1,10 +1,13 @@
-define(["require", "exports", "game"], function(require, exports, __game__) {
+define(["require", "exports", "game", "stunts"], function(require, exports, __game__, __stunts__) {
     var game = __game__;
+
+    var stunts = __stunts__;
 
     var Player = (function () {
         function Player(queue) {
             var _this = this;
             this.combo = 0;
+            this.score = 0;
             var ballImage = queue.getResult("ball");
             this.ball = new createjs.Bitmap(ballImage);
             this.ball.scaleX = game.Game.blockSize / ballImage.width;
@@ -23,20 +26,34 @@ define(["require", "exports", "game"], function(require, exports, __game__) {
                 }
             });
             game.Game.controls.on(ControlEvent.switchForward, function () {
-                if(_this.mode == Player.subtractMode) {
+                _this.currentStunt++;
+                _this.currentStunt %= _this.stunts.length;
+                if(_this.stunts[_this.currentStunt].type == stunts.Stunt.add) {
                     _this.mode = Player.addMode;
-                } else if(_this.mode == Player.addMode) {
+                } else {
                     _this.mode = Player.subtractMode;
                 }
+                game.Game.ui.carousel.forward();
             });
             game.Game.controls.on(ControlEvent.switchBack, function () {
-                if(_this.mode == Player.subtractMode) {
+                _this.currentStunt--;
+                _this.currentStunt %= _this.stunts.length;
+                if(_this.currentStunt < 0) {
+                    _this.currentStunt = _this.stunts.length + _this.currentStunt;
+                }
+                if(_this.stunts[_this.currentStunt].type == stunts.Stunt.add) {
                     _this.mode = Player.addMode;
-                } else if(_this.mode == Player.addMode) {
+                } else {
                     _this.mode = Player.subtractMode;
                 }
+                game.Game.ui.carousel.back();
             });
-            this.mode = Player.subtractMode;
+            this.stunts = [
+                stunts.RaisePlatform, 
+                stunts.LowerPlatform
+            ];
+            this.currentStunt = 0;
+            this.mode = Player.addMode;
             this.progress = 0;
             this.ready = true;
         }

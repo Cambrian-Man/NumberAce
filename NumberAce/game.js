@@ -36,6 +36,10 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
                 src: "./graphics/piston.png"
             });
             this.queue.loadFile({
+                id: "background",
+                src: "./graphics/background.png"
+            });
+            this.queue.loadFile({
                 id: "platform",
                 src: "./graphics/platform.png"
             });
@@ -48,39 +52,59 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
                 src: "./graphics/downArrow.png"
             });
             this.queue.loadFile({
+                id: "raisePlatform",
+                src: "./graphics/raisePlatform.png"
+            });
+            this.queue.loadFile({
+                id: "lowerPlatform",
+                src: "./graphics/lowerPlatform.png"
+            });
+            this.queue.loadFile({
                 id: "goButton",
                 src: "./graphics/goButton.png"
             });
+            this.queue.loadFile({
+                id: "comboMeter",
+                src: "./graphics/comboMeter.png"
+            });
             this.queue.addEventListener("complete", function () {
-                _this.gameStart();
+                _this.gameSetup();
             });
             stunts.Stunt.queue = this.queue;
         }
-        Game.prototype.gameStart = function () {
+        Game.prototype.gameSetup = function () {
             var _this = this;
+            this.stage.removeAllChildren();
             createjs.Ticker.addEventListener("tick", function () {
                 _this.update();
             });
             Game.ui = new ui.UI(ui.UI.tablet, this.queue);
-            var g = new createjs.Graphics();
-            g.beginLinearGradientFill([
-                "#115ca4", 
-                "#5ecaed"
-            ], [
-                0, 
-                1
-            ], 0, 0, 0, Game.height);
-            g.drawRect(0, 0, Game.width, Game.height);
-            this.background = new createjs.Shape(g);
+            ui.StuntCarousel.loadIcons(this.queue);
+            Game.controls = new control.Controls(control.Controls.touch);
+            // Build the background.
+            var backBitmap = this.queue.getResult("background");
+            this.background = new createjs.Container();
+            var compWidth = (Game.height / backBitmap.height) * backBitmap.width;
+            for(var i = 0; i < Game.width / compWidth; i++) {
+                var backComponent = new createjs.Bitmap(backBitmap);
+                backComponent.scaleY = Game.height / backBitmap.height;
+                backComponent.scaleX = Game.height / backBitmap.height;
+                backComponent.x = compWidth * i;
+                (this.background).addChild(backComponent);
+            }
             this.stage.addChild(this.background);
+            this.gameStart();
+        };
+        Game.prototype.gameStart = function () {
+            var _this = this;
             this.board = new board.Board(this.queue);
             stunts.Stunt.board = this.board;
             this.stage.addChild(this.board);
-            Game.controls = new control.Controls(control.Controls.touch);
             this.player = new control.Player(this.queue);
             this.player.column = 0;
             this.player.power = 0;
             this.player.height = this.board.getLine(0).size();
+            Game.ui.carousel.buildIcons(this.player);
             this.player.onActivate = function () {
                 if(_this.player.ready) {
                     _this.activate();
@@ -95,27 +119,47 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
                 return;
             }
             this.player.ready = false;
+            clearInterval(this.drainTimer);
+            this.drainTimer = null;
             var line = this.board.getLine(this.player.column);
             var nextLine = this.board.getLine(this.player.column + 1);
-            var stunt = new stunts.AddPlatform(line, nextLine, this.player, function () {
+            var stunt = new this.player.stunts[this.player.currentStunt](line, nextLine, this.player, function () {
                 _this.success();
             }, function () {
                 _this.failure();
             });
-            stunt.go();
+            if(this.player.mode == control.Player.subtractMode && line.size() - this.player.power <= 0) {
+                this.failure();
+            } else {
+                stunt.go();
+            }
             this.player.power = 0;
+        };
+        Game.prototype.drainCombo = function () {
+            if(this.player.combo > 0) {
+                this.player.combo -= 1;
+            }
         };
         Game.prototype.success = function () {
             this.player.height = this.board.getLine(this.player.column).size();
             this.player.column++;
-            this.player.combo += 10;
-            console.log(this.player.combo);
+            if(this.player.column == this.board.size()) {
+                this.showEnding();
+                return;
+            }
+            if(this.player.combo < 100) {
+                this.player.combo += 10;
+            } else {
+                this.player.combo = 100;
+            }
+            this.player.score += (10 + this.player.combo);
         };
         Game.prototype.failure = function () {
             this.player.ready = true;
             this.player.combo = 0;
         };
         Game.prototype.update = function () {
+            var _this = this;
             if(this.player.progress > Game.width / 2) {
                 this.cameraOffset = this.player.progress - (Game.width / 2);
             } else {
@@ -125,7 +169,28 @@ define(["require", "exports", "board", "control", "ui", "stunts"], function(requ
             this.player.ball.y = this.board.getLine(this.player.column).y;
             this.board.x = -this.cameraOffset;
             Game.ui.update(this.player);
+            if(this.player.ready && !this.drainTimer) {
+                this.drainTimer = setInterval(function () {
+                    _this.drainCombo();
+                }, 1000);
+            }
             this.stage.update();
+        };
+        Game.prototype.showEnding = function () {
+            var _this = this;
+            var endText = new createjs.Text("Your Score is " + this.player.score, Game.width / 30 + "px Fredoka One", "#FFF");
+            endText.x = Game.width / 2;
+            endText.y = Game.height / 2;
+            endText.textAlign = "center";
+            this.stage.addChild(endText);
+            this.player.ready = false;
+            this.stage.update();
+            var goOn = function () {
+                _this.gameSetup();
+                window.removeEventListener("click", goOn);
+            };
+            window.addEventListener("click", goOn);
+            createjs.Ticker.removeAllListeners();
         };
         return Game;
     })();

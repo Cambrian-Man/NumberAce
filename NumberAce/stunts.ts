@@ -10,6 +10,10 @@ export class Stunt {
     public static subtract: string = "subtract";
     public static both: string = "both";
 
+    public static icons = {};
+
+    public type: string;
+    
     constructor(public from: board.Line, public to: board.Line, public player:control.Player, public success: Function, public failure:Function) {
         
     }
@@ -21,7 +25,7 @@ export class Stunt {
 
 export class AddPlatform extends Stunt {
     private platform: createjs.DisplayObject;
-    public type = Stunt.both;
+    public static type = Stunt.both;
 
     go() {
         var platformImage = <HTMLImageElement> Stunt.queue.getResult("platform");
@@ -94,6 +98,15 @@ export class AddPlatform extends Stunt {
                 completed();
             });
     }
+}
+
+
+export class RaisePlatform extends AddPlatform {
+    public static type = Stunt.add;
+}
+
+export class LowerPlatform extends AddPlatform {
+    public static type = Stunt.subtract;
 }
 
 export class Pinball extends Stunt{
